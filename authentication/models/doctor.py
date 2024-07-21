@@ -5,6 +5,7 @@ from authentication.models.user import User
 
 
 class Doctor (models.Model):
+    professional_number = models.CharField(max_length=100)
     specialty = models.CharField(choices = Speciality.choices, max_length=100)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
