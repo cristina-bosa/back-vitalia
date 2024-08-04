@@ -12,6 +12,7 @@ from authentication.models.doctor import Doctor
 from authentication.models.patient import Patient
 from authentication.serializers.user import UserSerializer
 from authentication.utils.type_user import REGISTER_TYPE
+from patients.models.medical_history import MedicalHistory
 
 
 class AuthViewSet(viewsets.ViewSet):
@@ -35,10 +36,8 @@ class AuthViewSet(viewsets.ViewSet):
             user = self.__create_user(request.data)
 
             if type_register is REGISTER_TYPE.PATIENT:
-                Patient.objects.create({
-                    'user': user,
-                    'birth_date': request.data.get('birth_date'),
-                    'genre': request.data.get('genre'),
+                patient = Patient.objects.create({
+                    'user': user
                     })
                 return Response(data = { 'msg': 'User created successfully' }, status = HTTPStatus.CREATED)
 
@@ -65,11 +64,6 @@ class AuthViewSet(viewsets.ViewSet):
         condition.append(data.get('specialty') is not None)
         return all(condition)
 
-    def __validate_patient_data(self, data):
-        condition = []
-        condition.append(data.get('birth_date') is not None)
-        condition.append(data.get('genre') is not None)
-        return all(condition)
 
     def __validate_user_data(self, data):
         condition = []
@@ -77,6 +71,8 @@ class AuthViewSet(viewsets.ViewSet):
         condition.append(data.get('last_name') is not None)
         condition.append(data.get('username') is not None)
         condition.append(data.get('email') is not None)
+        condition.append(data.get('birth_date') is not None)
+        condition.append(data.get('genre') is not None)
         condition.append(data.get('password') is not None)
         condition.append(data.get('phone') is not None)
         return all(condition)
@@ -87,11 +83,12 @@ class AuthViewSet(viewsets.ViewSet):
                 username= data.get('username'),
                 first_name= data.get('first_name'),
                 last_name= data.get('last_name'),
+                genre= data.get('genre'),
+                birth_date= data.get('birth_date'),
+                phone= data.get('phone'),
                 email= data.get('email'),
                 password= data.get('password'),
-                phone= data.get('phone'),
                 )
             return user
         except Exception as e:
             return None
-

@@ -5,8 +5,8 @@ from patients.models.medical_history import MedicalHistory
 
 
 class Patient(models.Model):
-    medical_history = models.OneToOneField(MedicalHistory, on_delete = models.CASCADE, related_name = 'medical_history')
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    medical_history = models.OneToOneField(MedicalHistory, on_delete = models.CASCADE, related_name = 'medical_history')
 
     class Meta:
         ordering = ['user']
