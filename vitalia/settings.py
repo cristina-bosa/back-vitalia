@@ -139,7 +139,6 @@ REST_FRAMEWORK = {
     #     "rest_framework.permissions.IsAuthenticated",
     #     "rest_framework.permissions.DjangoModelPermissions",
     # ),
-    # "DEFAULT_PAGINATION_CLASS": "master_web_proyecto_grupal_backend.paginations.StandardResultsSetPagination",
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
@@ -154,20 +153,20 @@ AUTH_USER_MODEL = (
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend", "authentication.backend.custom_model.CustomModel")
 
 # CORS
-# CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ALLOW_METHODS = (
-#     "DELETE",
-#     "GET",
-#     "OPTIONS",
-#     "PATCH",
-#     "POST",
-#     "PUT",
-# )
-# CORS_ALLOW_HEADERS = (
-#     "accept",
-#     "authorization",
-#     "content-type",
-#     "user-agent",
-#     "x-csrftoken",
-#     "x-requested-with",
-# )
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_METHODS = (
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
