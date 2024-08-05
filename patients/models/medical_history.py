@@ -8,10 +8,10 @@ from patients.models.relevant_diseases import RelevantDiseases
 
 
 class MedicalHistory(models.Model):
-    allergies = ManyToManyField(Allergies, related_name = 'allergies')
-    relevant_diseases = ManyToManyField(RelevantDiseases, related_name = 'relevant_diseases')
-    current_medication = ManyToManyField(CurrentMedication, related_name = 'current_medication')
-    medical_intervention = ManyToManyField(MedicalIntervention, related_name = 'medical_intervention')
+    allergies = ManyToManyField(Allergies, related_name = 'allergies', blank=True)
+    relevant_diseases = ManyToManyField(RelevantDiseases, related_name = 'relevant_diseases', blank=True)
+    current_medication = ManyToManyField(CurrentMedication, related_name = 'current_medication', blank=True)
+    medical_intervention = ManyToManyField(MedicalIntervention, related_name = 'medical_intervention', blank=True)
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
 

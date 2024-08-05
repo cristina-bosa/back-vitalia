@@ -10,6 +10,6 @@ class Patient(models.Model):
 
     class Meta:
         ordering = ['user']
-        verbose_name = 'Patient'
-        verbose_name_plural = 'Patients'
+        verbose_name = 'patient'
+        verbose_name_plural = 'patients'
 

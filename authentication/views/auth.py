@@ -1,27 +1,31 @@
 from http import HTTPStatus
 
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate, login
+from django.contrib.auth.models import Group
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import HTTP_401_UNAUTHORIZED
 
 from authentication.models import User
 from authentication.models.doctor import Doctor
 from authentication.models.patient import Patient
+from authentication.serializers.doctor import DoctorSerializer
+from authentication.serializers.patient import PatientSerializer
 from authentication.serializers.user import UserSerializer
 from authentication.utils.type_user import REGISTER_TYPE
 from patients.models.medical_history import MedicalHistory
+from patients.serializers.medical_history import MedicalHistorySerializer
 
 
 class AuthViewSet(viewsets.ViewSet):
     @action(detail = False, methods = ['post'], url_path = 'register') #register
     def register(self, request):
         try:
-            type_register = request.data['type_register']
-
-            if not type_register in REGISTER_TYPE:
+            register_type = request.data.get('register_type')
+            if not register_type in REGISTER_TYPE:
                 return HTTPStatus.BAD_REQUEST
 
             user_serializer = UserSerializer(data = request.data)
@@ -29,66 +33,50 @@ class AuthViewSet(viewsets.ViewSet):
             if user_serializer.errors:
                 return Response(data = user_serializer.errors, status = HTTPStatus.BAD_REQUEST)
 
-            if (not self.__validate_patient_data(request.data) and type_register is REGISTER_TYPE.PATIENT or not
-                    self.__validate_doctor_data(request.data) and type_register is REGISTER_TYPE.DOCTOR):
-                return Response(data = { 'msg': 'Invalid profile data' }, status = HTTPStatus.BAD_REQUEST)
+            if register_type == REGISTER_TYPE.DOCTOR:
+                profile_serializer = DoctorSerializer
+                profile_data = request.data
+            else:
+                profile_serializer = MedicalHistorySerializer
+                profile_data = request.data.get('medical_history', {})
+            profile_serializer = profile_serializer(data = profile_data)
+            profile_serializer.is_valid()
+            if profile_serializer.errors:
+                return Response(data = profile_serializer.errors, status = HTTPStatus.BAD_REQUEST)
 
-            user = self.__create_user(request.data)
+            user = user_serializer.save()
+            user.set_password(user.password)
+            if register_type == REGISTER_TYPE.DOCTOR:
+                doctor = Doctor.objects.create(**profile_serializer.validated_data, user = user)
+                user.groups.add(Group.objects.get(name = 'Doctor'))
+            else:
+                medical_history = profile_serializer.save()
+                patient = Patient.objects.create(
+                    user = user,
+                    medical_history = medical_history
+                )
+                user.groups.add(Group.objects.get(name = 'Patient'))
 
-            if type_register is REGISTER_TYPE.PATIENT:
-                patient = Patient.objects.create({
-                    'user': user
-                    })
-                return Response(data = { 'msg': 'User created successfully' }, status = HTTPStatus.CREATED)
-
-            elif type_register is REGISTER_TYPE.DOCTOR:
-                Doctor.objects.create({
-                    'user': user,
-                    'specialty': request.data.get('specialty'),
-                    })
-                return Response(data = { 'msg': 'User created successfully' }, status = HTTPStatus.CREATED)
+            return Response(data = UserSerializer(user).data, status = HTTPStatus.CREATED)
 
         except Exception as e:
-            return Response(status = HTTPStatus.BAD_REQUEST)
+            raise e
 
     @action(detail = False, methods = ['post'], url_path = 'login', permission_classes = []) #login
     def login(self, request):
-        pass
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            user = authenticate(**request.data)
+        if user and not user.is_anonymous:
+            login(request, user)
+        if not user or user.is_anonymous:
+            return Response({'detail': 'Invalid Credentials or activate account'}, status=HTTP_401_UNAUTHORIZED)
+        token, created = Token.objects.get_or_create(user=user)
+        data = UserSerializer(user).data
+        data.update({'token': token.key})
+        return Response(data=data)
 
     @action(detail = False, methods = ['post'], url_path = 'logout', permission_classes = [IsAuthenticated]) #logout
     def logout(self, request):
-        pass
-
-    def __validate_doctor_data(self, data):
-        condition = []
-        condition.append(data.get('specialty') is not None)
-        return all(condition)
-
-
-    def __validate_user_data(self, data):
-        condition = []
-        condition.append(data.get('first_name') is not None)
-        condition.append(data.get('last_name') is not None)
-        condition.append(data.get('username') is not None)
-        condition.append(data.get('email') is not None)
-        condition.append(data.get('birth_date') is not None)
-        condition.append(data.get('genre') is not None)
-        condition.append(data.get('password') is not None)
-        condition.append(data.get('phone') is not None)
-        return all(condition)
-
-    def __create_user(self, data):
-        try:
-            user = User.objects.create(
-                username= data.get('username'),
-                first_name= data.get('first_name'),
-                last_name= data.get('last_name'),
-                genre= data.get('genre'),
-                birth_date= data.get('birth_date'),
-                phone= data.get('phone'),
-                email= data.get('email'),
-                password= data.get('password'),
-                )
-            return user
-        except Exception as e:
-            return None
+        logout(request)
+        return Response(status=200)

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'authentication',
     'administration',
+    'vitalia',
     'doctors',
     'patients',
     'notifications'
@@ -150,7 +151,7 @@ AUTH_USER_MODEL = (
     "authentication.User"
 )
 #"authentication.backend.CustomModel"
-AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend", )
+AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend", "authentication.backend.custom_model.CustomModel")
 
 # CORS
 # CORS_ALLOW_ALL_ORIGINS = True
