@@ -22,6 +22,7 @@ from patients.serializers.medical_history import MedicalHistorySerializer
 
 class AuthViewSet(viewsets.ViewSet):
     @action(detail = False, methods = ['post'], url_path = 'register') #register
+    #TODO: Revisar el registro, no puedo registrar dos médicos con la misma especialidad
     def register(self, request):
         try:
             register_type = request.data.get('register_type')
@@ -46,6 +47,7 @@ class AuthViewSet(viewsets.ViewSet):
 
             user = user_serializer.save()
             user.set_password(user.password)
+            user.save()
             if register_type == REGISTER_TYPE.DOCTOR:
                 doctor = Doctor.objects.create(**profile_serializer.validated_data, user = user)
                 user.groups.add(Group.objects.get(name = 'Doctor'))
@@ -73,8 +75,14 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'detail': 'Invalid Credentials or activate account'}, status=HTTP_401_UNAUTHORIZED)
         token, created = Token.objects.get_or_create(user=user)
         data = UserSerializer(user).data
-        data.update({'token': token.key})
+        data.update({'access_token': token.key})
         return Response(data=data)
+
+    @action (detail = False, methods = ['get'], url_path = 'me', permission_classes = [IsAuthenticated]) #me
+    def me(self, request):
+        user = request.user
+        return Response(data = UserSerializer(user).data)
+
 
     @action(detail = False, methods = ['post'], url_path = 'logout', permission_classes = [IsAuthenticated]) #logout
     def logout(self, request):

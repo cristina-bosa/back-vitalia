@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from authentication.choices.genre import Genre
+from doctors.models.city import City
 
 
 class User(AbstractUser):
@@ -9,6 +10,7 @@ class User(AbstractUser):
     genre = models.CharField(choices = Genre.choices, max_length = 10)
     phone = models.CharField(max_length = 20)
     identification_number = models.CharField(max_length = 20, unique=True)
+    city = models.ForeignKey(City, on_delete = models.CASCADE, related_name = 'city')
 
     def is_doctor(self):
         return hasattr(self, 'doctor')
