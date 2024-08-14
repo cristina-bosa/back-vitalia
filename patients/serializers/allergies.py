@@ -8,3 +8,10 @@ class AllergiesSerializer(serializers.ModelSerializer):
         model = Allergies
         fields = '__all__'
 
+
+class AllergiesSelectSerializer(serializers.ModelSerializer):
+    value = serializers.CharField(source='id')
+    label = serializers.CharField(source='name')
+    class Meta:
+        model = Allergies
+        fields = ['value','label']

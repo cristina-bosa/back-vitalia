@@ -8,3 +8,10 @@ class MedicalInterventionSerializer(serializers.ModelSerializer):
         model = MedicalIntervention
         fields = '__all__'
 
+
+class MedicalInterventionSelectSerializer(serializers.ModelSerializer):
+    value = serializers.CharField(source='id')
+    label = serializers.CharField(source='name')
+    class Meta:
+        model = MedicalIntervention
+        fields = ['value','label']
