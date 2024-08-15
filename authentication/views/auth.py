@@ -72,11 +72,9 @@ class AuthViewSet(viewsets.ViewSet):
         if user and not user.is_anonymous:
             login(request, user)
         if not user or user.is_anonymous:
-            return Response({'detail': 'Invalid Credentials or activate account'}, status=HTTP_401_UNAUTHORIZED)
-        token, created = Token.objects.get_or_create(user=user)
-        data = UserSerializer(user).data
-        data.update({'access_token': token.key})
-        return Response(data=data)
+            return Response({'detail': 'Invalid credentials or activate account'}, status=HTTP_401_UNAUTHORIZED)
+        token, _ = Token.objects.get_or_create(user = user)
+        return Response({'access_token': token.key}, status=HTTPStatus.OK)
 
     @action(detail = False, methods = ['post'], url_path = 'logout', permission_classes = [IsAuthenticated]) #logout
     def logout(self, request):
@@ -86,6 +84,12 @@ class AuthViewSet(viewsets.ViewSet):
     @action (detail = False, methods = ['get'], url_path = 'me', permission_classes = [IsAuthenticated]) #me
     def me(self, request):
         user = request.user
+        if user.groups.filter(name = 'Patient').exists():
+            user = Patient.objects.get(user = user)
+            return Response(data = PatientSerializer(user).data)
+        elif user.groups.filter(name = 'Doctor').exists():
+            user = Doctor.objects.get(user = user)
+            return Response(data = DoctorSerializer(user).data)
         return Response(data = UserSerializer(user).data)
 
     @action(detail = False, methods = ['post'], url_path = 'cancel-account', permission_classes = [IsAuthenticated]) #cancel-account
