@@ -8,3 +8,6 @@ class RelevantDiseases(models.Model):
         ordering = ['name']
         verbose_name = 'relevant_disease'
         verbose_name_plural = 'relevant_diseases'
+
+    def __str__(self):
+        return self.name

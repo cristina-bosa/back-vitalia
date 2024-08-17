@@ -9,3 +9,5 @@ class MedicalIntervention(models.Model):
         verbose_name = 'medical_intervention'
         verbose_name_plural = 'medical_interventiones'
 
+    def __str__(self):
+        return self.name

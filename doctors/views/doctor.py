@@ -14,6 +14,7 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
 
+
     @action(detail=False, methods=['post'], url_path='book')
     def book(self, request):
         pass
@@ -22,7 +23,7 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
     def unbook(self, request):
         pass
 
-    @action(detail=False, methods=['get'], url_path='reviews')
+    @action(detail=True, methods=['get'], url_path='reviews')
     def reviews(self, request):
         doctor = self.get_object()
         reviews = doctor.reviews_set.all()
@@ -33,15 +34,19 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
         doctor = self.get_object()
         reviews = doctor.reviews_set.filter(patient = self.request.user.patient)
         if reviews.exists():
-            return Response(data = "Este doctor ya tiene una review asignada", status = HTTPStatus.FOUND)
+            return Response(data = "Ya has asignado una review a este médico",
+                            status = HTTPStatus.FOUND)
         review_serializer = ReviewSerializer(data = request.data)
         review_serializer.is_valid()
         if review_serializer.errors:
             return Response(data = review_serializer.errors, status = HTTPStatus.BAD_REQUEST)
-        review = review_serializer.create(request.data)
-        review.doctor = doctor
-        review.patient = self.request.user.patient
-        review.save()
+        review = Review.objects.create(
+                rating = request.data.get('rating'),
+                review = request.data.get('review'),
+                doctor = doctor,
+                patient = self.request.user.patient
+                )
+        self.__calculate_rating(doctor)
         return Response(data = ReviewSerializer(review).data, status = HTTPStatus.CREATED)
 
     @action(detail=False, methods=['delete'], url_path='review/<int:review_id>/delete')
@@ -50,4 +55,14 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
         reviews = doctor.reviews_set.filter(id = review_id, patient = self.request.user.patient)
         for review in reviews:
             review.delete()
+        self.__calculate_rating(doctor)
         return Response(status = HTTPStatus.NO_CONTENT)
+
+    def __calculate_rating(self, doctor):
+        reviews = doctor.reviews_set.all()
+        total = 0
+        for review in reviews:
+            total += review.rating
+        doctor.stars = total / reviews.count()
+        doctor.save()
+        return doctor.rating
