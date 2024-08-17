@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.core.management import BaseCommand
 
 from authentication.models.doctor import Doctor
@@ -190,7 +191,7 @@ class Command(BaseCommand):
             try:
                 city = City.objects.get(id = doctor_data["city_id"])
                 specialty = Specialty.objects.get(id = doctor_data["specialty_id"])
-
+                role = Group.objects.get(name = "Doctor")
                 if User.objects.filter(username = doctor_data["username"]).exists():
                     self.stdout.write(self.style.WARNING(f"User {doctor_data['username']} already exists, skipping."))
                     continue
@@ -207,6 +208,8 @@ class Command(BaseCommand):
                         birth_date = doctor_data["birth_date"],
                         password = doctor_data["password"]
                         )
+                user.groups.add(role)
+                user.save()
                 print(f"Doctor {doctor_data['username']} created successfully")
 
                 Doctor.objects.create(

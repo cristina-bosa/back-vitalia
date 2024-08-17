@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,10 +11,20 @@ from doctors.serializers.doctor import DoctorSerializer
 from doctors.serializers.review import ReviewSerializer
 
 
+class DoctorFilter(filters.FilterSet):
+    city = filters.NumberFilter(field_name='user__city__id')
+    specialty = filters.NumberFilter(field_name='specialty__id')
+
+    class Meta:
+        model = Doctor
+        fields = ['city', 'specialty']
+
+
 class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
-
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = DoctorFilter
 
     @action(detail=False, methods=['post'], url_path='book')
     def book(self, request):
