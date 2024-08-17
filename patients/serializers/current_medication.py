@@ -8,3 +8,10 @@ class CurrentMedicationSerializer(serializers.ModelSerializer):
         model = CurrentMedication
         fields = '__all__'
 
+
+class CurrentMedicationlSelectSerializer(serializers.ModelSerializer):
+    value = serializers.CharField(source='id')
+    label = serializers.CharField(source='name')
+    class Meta:
+        model = CurrentMedication
+        fields = ['value','label']

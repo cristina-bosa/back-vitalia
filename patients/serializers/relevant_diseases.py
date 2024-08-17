@@ -8,3 +8,9 @@ class RelevantDiseasesSerializer(serializers.ModelSerializer):
         model = RelevantDiseases
         fields = '__all__'
 
+class RelevantDiseasesSelectSerializer(serializers.ModelSerializer):
+    value = serializers.CharField(source='id')
+    label = serializers.CharField(source='name')
+    class Meta:
+        model = RelevantDiseases
+        fields = ['value','label']

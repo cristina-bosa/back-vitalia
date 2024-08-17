@@ -12,12 +12,10 @@ class Doctor (models.Model):
     start_schedule = models.TimeField()
     end_schedule = models.TimeField()
     user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True)
-    specialty = models.OneToOneField(Specialty, on_delete=models.CASCADE, related_name='specialty')
-    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name='city')
+    specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE, related_name='specialty')
+
 
     class Meta:
         ordering = ['specialty']
-        indexes = [models.Index(fields=['specialty', 'city'])]
         verbose_name = 'doctor'
         verbose_name_plural = 'doctors'
-
