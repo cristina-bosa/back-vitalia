@@ -11,7 +11,6 @@ from patients.models.relevant_diseases import RelevantDiseases
 
 class Command(BaseCommand):
     help = "Seeder of the database. Reference tables are filled with data."
-    CITIES = ["Madrid", "Barcelona", "Valencia", "Sevilla", "Zaragoza", "Málaga", "Bilbao", "Murcia", "Alicante", "Granada"]
     SPECIALTIES = ["Cardiología", "Dermatología", "Neurología", "Pediatría", "Ginecología", "Oncología", "Psiquiatría", "Oftalmología", "Cirugía General", "Ortopedia"]
     ALLERGIES = ["Polen", "Ácaros", "Alimentos", "Medicamentos", "Picadura de insectos", "Moho", "Látex", "Animales", "Perfumes", "Níquel"]
     RELEVANT_DISEASESS = ["Diabetes", "Hipertensión", "Asma", "Artritis", "Cáncer", "Enfermedad de Alzheimer", "Gripe", "Depresión", "Migraña", "Enfermedad cardíaca"]
@@ -23,53 +22,43 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        print("SEEDER STARTED")
-        print("Creating cities")
-        for city in self.CITIES:
-            try:
-                City.objects.create(name=city)
-                print(f"{city} created")
-            except Exception as e:
-                pass
-
-        print("\nCreating specialties")
+        print("\nCreating specialties 👨‍⚕️")
         for specialty in self.SPECIALTIES:
             try:
                 Specialty.objects.create(name=specialty)
                 print(f"{specialty} created")
             except Exception as e:
                 pass
-
-        print("\nCreating allergies")
+        print("Ending specialties creation👋")
+        print("\nCreating allergies ☘️")
         for allergy in self.ALLERGIES:
             try:
                 Allergies.objects.create(name=allergy)
                 print(f"{allergy} created")
             except Exception as e:
                 pass
-
-        print("\nCreating relevant diseases")
+        print("Ending allergies creation👋")
+        print("\nCreating relevant diseases 💉")
         for relevant_disease in self.RELEVANT_DISEASESS:
             try:
                 RelevantDiseases.objects.create(name=relevant_disease)
                 print(f"{relevant_disease} created")
             except Exception as e:
                 pass
-
-        print("\nCreating current medications")
+        print("Ending relevant diseases creation👋")
+        print("\nCreating current medications 💊")
         for current_medication in self.CURRENT_MEDICATIONS:
             try:
                 CurrentMedication.objects.create(name=current_medication)
                 print(f"{current_medication} created")
             except Exception as e:
                 pass
-
-        print("\nCreating medical interventions")
+        print("Ending current medications creation👋")
+        print("\nCreating medical interventions ❤️‍🩹")
         for medical_intervention in self.MEDICAL_INTERVENTIONS:
             try:
                 MedicalIntervention.objects.create(name=medical_intervention)
                 print(f"{medical_intervention} created")
             except Exception as e:
                 pass
-
-        print("SEEDER FINISHED")
+        print("Ending medical interventios creation👋")

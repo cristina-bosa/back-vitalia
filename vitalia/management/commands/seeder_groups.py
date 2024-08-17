@@ -44,8 +44,7 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        print("SEEDER STARTED")
-        print("Creating groups")
+        print("Creating groups 👨‍👩‍👧‍👦")
         for group in self.GROUPS:
             try:
                 Group.objects.create(name=group)
@@ -71,5 +70,4 @@ class Command(BaseCommand):
                     print(f"{permission} added to {group}")
                 except Exception as e:
                     pass
-
-        print("SEEDER FINISHED")
+        print("Ending groups creation 👨‍👩‍👧‍👦")
