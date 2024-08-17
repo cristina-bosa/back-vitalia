@@ -8,3 +8,6 @@ class CurrentMedication(models.Model):
         ordering = ['name']
         verbose_name = 'current_medication'
         verbose_name_plural = 'current_medications'
+
+    def __str__(self):
+        return self.name

@@ -8,3 +8,6 @@ class Allergies (models.Model):
         ordering = ['name']
         verbose_name = 'allergy'
         verbose_name_plural = 'allergies'
+
+    def __str__(self):
+        return self.name

@@ -56,12 +56,11 @@ class Command(BaseCommand):
         pass
 
     def handle (self, *args, **options):
-        print("SEEDER STARTED")
-        print("Creating cities")
+        print("Creating cities 🏙️")
         for city in self.CITIES:
             try:
                 City.objects.create(name=city)
                 print(f"{city} created")
             except Exception as e:
                 pass
-        print("SEEDER FINISHED")
+        print("Ending cities creation 🌆")
