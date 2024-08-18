@@ -16,6 +16,6 @@ class Doctor (models.Model):
 
 
     class Meta:
-        ordering = ['stars']
+        ordering = ['-stars']
         verbose_name = 'doctor'
         verbose_name_plural = 'doctors'

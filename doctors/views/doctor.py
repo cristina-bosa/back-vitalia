@@ -26,6 +26,13 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = DoctorFilter
 
+    @action (detail = False, methods = ['get'], url_path = 'top')
+    def get_top_four(self, request):
+        user = request.user
+        city = user.city
+        doctors = Doctor.objects.filter(user__city = city)[:4]
+        return Response(data = DoctorSerializer(doctors, many = True).data, status = HTTPStatus.OK)
+
     @action(detail=False, methods=['post'], url_path='book')
     def book(self, request):
         pass
