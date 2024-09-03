@@ -19,12 +19,14 @@ from django.urls import include, path
 
 
 from authentication.urls import router as authentication
+from administration.urls import router as administration
 from patients.urls import router as patients
 from doctors.urls import router as doctors
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include(authentication.urls)),
+    path('api/admin/', include(administration.urls)),
     path('api/patients/', include(patients.urls)),
     path('api/doctors/', include(doctors.urls))
 ]

@@ -33,14 +33,6 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
         doctors = Doctor.objects.filter(user__city = city)[:4]
         return Response(data = DoctorSerializer(doctors, many = True).data, status = HTTPStatus.OK)
 
-    @action(detail=False, methods=['post'], url_path='book')
-    def book(self, request):
-        pass
-
-    @action(detail=False, methods=['post'], url_path='unbook')
-    def unbook(self, request):
-        pass
-
     @action(detail=True, methods=['get'], url_path='reviews')
     def reviews(self, request):
         doctor = self.get_object()

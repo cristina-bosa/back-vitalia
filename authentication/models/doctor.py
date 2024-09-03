@@ -4,7 +4,7 @@ from django.db import models
 from authentication.models.user import User
 from doctors.models.specialty import Specialty
 
-
+#TODO: Añadir un nuevo campo para desactivar o activar al usuario
 class Doctor (models.Model):
     professional_number = models.CharField(max_length=100, unique=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
