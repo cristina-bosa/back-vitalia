@@ -50,7 +50,7 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
             patient_appointment=data['patient_appointment']
         )
         if appointment_exists:
-            return Response(data="Ya existe una cita en ese horario", status=HTTPStatus.BAD_REQUEST)
+            return Response(data="Ya existe una cita en ese horario", status=HTTPStatus.NOT_ACCEPTABLE)
 
         try:
             with transaction.atomic():

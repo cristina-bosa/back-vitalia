@@ -1,11 +1,17 @@
+from datetime import datetime, timedelta
+
 from http import HTTPStatus
 
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from authentication.models.doctor import Doctor
+from authentication.permissions.groups import IsUserPatient
+from doctors.choices.status import Status
+from doctors.models.medical_appointment import MedicalAppointment
 from doctors.models.review import Review
 from doctors.serializers.doctor import DoctorSerializer
 from doctors.serializers.review import ReviewSerializer
@@ -67,6 +73,48 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
             review.delete()
         self.__calculate_rating(doctor)
         return Response(status = HTTPStatus.NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path = "available-hours", permission_classes=[IsAuthenticated,
+                                                                                            IsUserPatient])
+    def available_hours(self, request, pk):
+        data = request.data
+        try:
+            doctor = Doctor.objects.get(pk = pk)
+        except Doctor.DoesNotExist:
+            return Response(data = "Doctor no encontrado", status = HTTPStatus.NOT_FOUND)
+
+        appointment_datetime = datetime.strptime(data['patient_appointment'], '%Y-%m-%d %H:%M:%S')
+        date = appointment_datetime.date()
+
+        appointments = MedicalAppointment.objects.filter(
+                doctor = doctor,
+                status = Status.CONFIRMED,
+                patient_appointment__date = date,
+                )
+
+        confirmed_slots = appointments.values_list('patient_appointment', flat = True)
+        occupied_slots = []
+        for slot in confirmed_slots:
+            hour = slot.hour
+            occupied_slots.append(hour)
+
+        today = datetime.now()
+        start_working = datetime.combine(today, doctor.start_schedule).hour
+        end_working = datetime.combine(today, doctor.end_schedule).hour
+        doctor_slots = []
+        for number in range(start_working, end_working+1):
+            doctor_slots.append(number)
+
+        slots_available = []
+        for slot in doctor_slots:
+            if slot not in occupied_slots:
+                time_slot = datetime.combine(today, datetime.min.time()).replace(hour=slot).strftime('%H:%M')
+                slots_available.append(time_slot)
+
+        if not slots_available:
+            return Response(data = "No hay horarios disponibles", status = HTTPStatus.NOT_FOUND)
+
+        return Response(data = slots_available, status = HTTPStatus.OK)
 
     def __calculate_rating(self, doctor):
         reviews = doctor.reviews_set.all()

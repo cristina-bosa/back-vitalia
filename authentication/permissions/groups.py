@@ -5,7 +5,7 @@ class IsUserPatient(BasePermission):
     message = 'Debes ser un paciente para acceder a este recurso'
 
     def has_permission(self, request, view):
-        return request.user.is_doctor() or request.user.is_admin()
+        return request.user.is_patient() or request.user.is_admin()
 
 
 class IsUserDoctor(BasePermission):
