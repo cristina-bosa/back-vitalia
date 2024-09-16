@@ -22,7 +22,6 @@ from patients.serializers.medical_history import MedicalHistorySerializer
 
 class AuthViewSet(viewsets.ViewSet):
     @action(detail = False, methods = ['post'], url_path = 'register') #register
-    #TODO: Revisar el registro, no puedo registrar dos médicos con la misma especialidad
     def register(self, request):
         try:
             register_type = request.data.get('register_type')
@@ -81,20 +80,14 @@ class AuthViewSet(viewsets.ViewSet):
         logout(request)
         return Response(status=200)
 
-    @action (detail = False, methods = ['get'], url_path = 'me', permission_classes = [IsAuthenticated]) #me
-    def me(self, request):
-        user = request.user
-        if user.groups.filter(name = 'Patient').exists():
-            user = Patient.objects.get(user = user)
-            return Response(data = PatientSerializer(user).data)
-        elif user.groups.filter(name = 'Doctor').exists():
-            user = Doctor.objects.get(user = user)
-            return Response(data = DoctorSerializer(user).data)
-        return Response(data = UserSerializer(user).data)
-
-    @action(detail = False, methods = ['post'], url_path = 'cancel-account', permission_classes = [IsAuthenticated]) #cancel-account
-    def cancel_account(self, request):
-        user = request.user
-        user.is_active = False
+    @action(detail = False, methods = ['get'], url_path = 'forgot-password', permission_classes = []) #forgot-password
+    def forgot_password(self, request):
+        email, identification_number = request.data.get('email'), request.data.get('identification_number')
+        try:
+            user = User.objects.get(email = email, identification_number = identification_number, is_active = True)
+        except:
+            return Response(data = "Usuario no identificado", status = HTTPStatus.NOT_FOUND)
+        new_password = request.data.get('password')
+        user.set_password(new_password)
         user.save()
-        return Response(status = HTTPStatus.OK)
+        return Response(data = "La contraseña ha sido actualizada con éxito", status = HTTPStatus.OK)
