@@ -23,6 +23,9 @@ class UserViewSet(viewsets.ViewSet):
         if user.is_doctor():
             user = Doctor.objects.get(user = user)
             return Response(data = DoctorSerializer(user).data)
+        if user.is_admin():
+            user = user
+            return Response(data = {"user": UserSerializer(user).data})
         return Response(data = UserSerializer(user).data)
 
     @action(detail = False, methods = ['post'], url_path = 'update-profile', permission_classes = [IsAuthenticated])

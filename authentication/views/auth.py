@@ -79,3 +79,15 @@ class AuthViewSet(viewsets.ViewSet):
     def logout(self, request):
         logout(request)
         return Response(status=200)
+
+    @action(detail = False, methods = ['get'], url_path = 'forgot-password', permission_classes = []) #forgot-password
+    def forgot_password(self, request):
+        email, identification_number = request.data.get('email'), request.data.get('identification_number')
+        try:
+            user = User.objects.get(email = email, identification_number = identification_number, is_active = True)
+        except:
+            return Response(data = "Usuario no identificado", status = HTTPStatus.NOT_FOUND)
+        new_password = request.data.get('password')
+        user.set_password(new_password)
+        user.save()
+        return Response(data = "La contraseña ha sido actualizada con éxito", status = HTTPStatus.OK)
