@@ -17,7 +17,7 @@ from authentication.serializers.patient import PatientSerializer
 from authentication.serializers.user import UserSerializer
 from authentication.utils.type_user import REGISTER_TYPE
 from patients.models.medical_history import MedicalHistory
-from patients.serializers.medical_history import MedicalHistorySerializer
+from patients.serializers.medical_history import MedicalHistoryGetSerializer, MedicalHistorySerializer
 
 
 class AuthViewSet(viewsets.ViewSet):
@@ -58,7 +58,7 @@ class AuthViewSet(viewsets.ViewSet):
                 )
                 user.groups.add(Group.objects.get(name = 'Patient'))
 
-            return Response(data = UserSerializer(user).data, status = HTTPStatus.CREATED)
+            return Response(data = 'Usuario creado con éxito', status = HTTPStatus.CREATED)
 
         except Exception as e:
             raise e

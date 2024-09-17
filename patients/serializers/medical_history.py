@@ -4,6 +4,11 @@ from patients.models.medical_history import MedicalHistory
 
 
 class MedicalHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MedicalHistory
+        fields = 'id', 'allergies', 'current_medication', 'medical_intervention', 'relevant_diseases'
+
+class MedicalHistoryGetSerializer(serializers.ModelSerializer):
     allergies = serializers.StringRelatedField(many = True)
     current_medication = serializers.StringRelatedField(many = True)
     medical_intervention = serializers.StringRelatedField(many = True)

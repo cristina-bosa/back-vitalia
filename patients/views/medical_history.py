@@ -9,11 +9,11 @@ from patients.models.current_medication import CurrentMedication
 from patients.models.medical_history import MedicalHistory
 from patients.models.medical_intervention import MedicalIntervention
 from patients.models.relevant_diseases import RelevantDiseases
-from patients.serializers.medical_history import MedicalHistorySerializer
+from patients.serializers.medical_history import MedicalHistoryGetSerializer
 
 
 class MedicalHistoryViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = MedicalHistorySerializer
+    serializer_class = MedicalHistoryGetSerializer
     queryset = MedicalHistory.objects.all()
 
     @action(detail = False, methods = ['post'], url_path = 'allergies/add')
