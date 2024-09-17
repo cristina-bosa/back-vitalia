@@ -5,6 +5,7 @@ from authentication.serializers.user import UserProfileSerializer
 
 
 class DoctorSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer()
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
     city = serializers.CharField(source='user.city.name', read_only=True)

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from authentication.models.doctor import Doctor
 from authentication.models.patient import Patient
 from authentication.serializers.patient import PatientSerializer
-from authentication.serializers.user import UpdateProfileSerializer, UserSerializer
+from authentication.serializers.user import UpdateProfileSerializer, UserProfileSerializer, UserSerializer
 from doctors.serializers.doctor import DoctorSerializer
 
 
@@ -25,7 +25,7 @@ class UserViewSet(viewsets.ViewSet):
             return Response(data = DoctorSerializer(user).data)
         if user.is_admin():
             user = user
-            return Response(data = {"user": UserSerializer(user).data})
+            return Response(data = {"user": UserProfileSerializer(user).data})
         return Response(data = UserSerializer(user).data)
 
     @action(detail = False, methods = ['post'], url_path = 'update-profile', permission_classes = [IsAuthenticated])
