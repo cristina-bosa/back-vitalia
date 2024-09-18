@@ -16,7 +16,7 @@ from doctors.choices.status import Status
 from doctors.models.appointment_information import AppointmentInformation
 from doctors.models.medical_appointment import MedicalAppointment
 from doctors.serializers.medical_appointment import MedicalAppointmentCreateSerializer,\
-    MedicalAppointmentDashboardSerializer, MedicalAppointmentSerializer
+    MedicalAppointmentDashboardSerializer, MedicalAppointmentPatientDataSerializer, MedicalAppointmentSerializer
 
 
 class MedicalAppointmentViewSet(viewsets.ModelViewSet):
@@ -30,6 +30,11 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
         elif user.is_doctor():
             return MedicalAppointment.objects.filter(doctor = user.get_profile())
         return MedicalAppointment.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = MedicalAppointmentPatientDataSerializer(instance)
+        return Response(serializer.data)
 
     @action(detail = False, methods = ['post'], url_path = "book",
             permission_classes = [IsAuthenticated, IsUserPatient])
@@ -80,20 +85,12 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
         return f"{prefix}{str(new_number).zfill(5)}"
 
     @action(detail = True, methods = ['post'], url_path = "unbook",
-            permission_classes = [IsAuthenticated, IsUserPatient, IsMedicalAppointmentPendingOrConfirmed])
+            permission_classes = [IsAuthenticated, IsMedicalAppointmentPendingOrConfirmed])
     def unbook(self, request):
         medical_appointment = self.get_object()
         medical_appointment.status = Status.CANCELED
         medical_appointment.save()
         return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)
-
-    @action(detail = True, methods = ['put'], url_path = "edit", permission_classes = [IsAuthenticated, IsUserPatient,
-                                                                                       IsMedicalAppointmentPending])
-    def edit_appointment(self, request):
-        #TODO: editar informacion de una reserva
-        medical_appointment = self.get_object()
-        data = self.serializer_class(medical_appointment).data
-        return Response(data = data, status = HTTPStatus.OK)
 
     @action(detail = False, methods = ['get'], url_path = "(?P<doctor_action>("
                                                           "pending|confirmed|in-progress|canceled|finished))",
@@ -117,6 +114,34 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
         data = MedicalAppointmentDashboardSerializer(appointments, many = True).data
         return Response(data = data, status = HTTPStatus.OK)
 
+    @action(detail = False, methods = ['post'], url_path = "filter/(?P<doctor_action>("
+                                                          "pending|confirmed|in-progress|canceled|finished))",
+            permission_classes = [IsAuthenticated, IsUserDoctor])
+    def get_medical_appointment_by_date(self, request, *args, **kwargs, ):
+        doctor_action = kwargs.get('doctor_action')
+        start_date = request.data.get('start_date')
+        if not start_date:
+            return Response(data = {"message": "Field start_date is required"}, status = HTTPStatus.BAD_REQUEST)
+        end_date = request.data.get('end_date', None)
+        match doctor_action:
+            case "pending":
+                appointments = self.get_queryset().filter(status = Status.PENDING)
+            case "confirmed":
+                appointments = self.get_queryset().filter(status = Status.CONFIRMED)
+            case "in-progress":
+                appointments = self.get_queryset().filter(status = Status.IN_PROGRESS)
+            case "canceled":
+                appointments = self.get_queryset().filter(status = Status.CANCELED)
+            case "finished":
+                appointments = self.get_queryset().filter(status = Status.FINISHED)
+            case _:
+                appointments = self.get_queryset()
+        appointments = appointments.filter(patient_appointment__gte = start_date)
+        if end_date:
+            appointments = appointments.filter(patient_appointment__lte = end_date)
+        data = MedicalAppointmentDashboardSerializer(appointments, many = True).data
+        return Response(data = data, status = HTTPStatus.OK)
+
     @action(detail = True, methods = ['post'], url_path = "(accept|reject)",
             permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentPending])
     def manage_pending_appointment(self, request, pk):
@@ -125,14 +150,6 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
             medical_appointment.status = Status.CONFIRMED
         else:
             medical_appointment.status = Status.CANCELED
-        medical_appointment.save()
-        return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)
-
-    @action(detail = True, methods = ['post'], url_path = "cancel",
-            permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentConfirmed])
-    def cancel_appointment(self, request):
-        medical_appointment = self.get_object()
-        medical_appointment.status = Status.CANCELED
         medical_appointment.save()
         return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)
 
@@ -153,7 +170,7 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
         return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)
 
     @action(detail = True, methods = ['post'], url_path = "appointment-information",
-            permission_classes = [IsAuthenticated, IsUserPatient, IsMedicalAppointmentInProgress])
+            permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentInProgress])
     def update_appointment_information(self, request):
         #TODO: introducir la informacion del informe medico
         medical_appointment = self.get_object()

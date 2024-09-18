@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from authentication.models.doctor import Doctor
+from authentication.serializers.patient import PatientAppointmentSerializer, PatientSerializer
 from doctors.models.appointment_information import AppointmentInformation
 from doctors.models.medical_appointment import MedicalAppointment
 from doctors.serializers.appointment_information import AppointmentInformationSerializer
@@ -30,3 +31,11 @@ class MedicalAppointmentDashboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicalAppointment
         fields = ['id','guid', 'status', 'patient_appointment', 'patient_name','patient_last_name', 'reason_consultation']
+
+
+class MedicalAppointmentPatientDataSerializer(serializers.ModelSerializer):
+    appointment_information = AppointmentInformationSerializer(many=True, read_only=True)
+    patient = PatientAppointmentSerializer()
+    class Meta:
+        model = MedicalAppointment
+        fields = '__all__'

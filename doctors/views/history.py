@@ -6,7 +6,7 @@ from doctors.serializers.medical_appointment import MedicalAppointmentSerializer
 
 
 class HistoryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = MedicalAppointment.objects.filter(status = Status.FINISHED)
+    queryset = MedicalAppointment.objects.filter(status__in = [Status.CONFIRMED, Status.IN_PROGRESS, Status.FINISHED])
     serializer_class = MedicalAppointmentSerializer
 
     def get_queryset(self):
