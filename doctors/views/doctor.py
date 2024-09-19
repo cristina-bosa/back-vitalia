@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from authentication.choices.statusdoctor import StatusDoctor
 from authentication.models.doctor import Doctor
 from authentication.permissions.groups import IsUserPatient
 from doctors.choices.status import Status
@@ -31,6 +32,11 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DoctorSerializer
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = DoctorFilter
+
+    @action(detail=False, methods=['get'], url_path='confirmed')
+    def get_active_doctors(self, request):
+        doctors = Doctor.objects.filter(status=StatusDoctor.CONFIRMED)
+        return Response(data=DoctorSerializer(doctors, many=True).data, status=HTTPStatus.OK)
 
     @action (detail = False, methods = ['get'], url_path = 'top')
     def get_top_four(self, request):
