@@ -1,3 +1,4 @@
+import datetime
 from http import HTTPStatus
 
 from django.db import transaction
@@ -15,6 +16,7 @@ from authentication.permissions.medical_appointment import IsMedicalAppointmentC
 from doctors.choices.status import Status
 from doctors.models.appointment_information import AppointmentInformation
 from doctors.models.medical_appointment import MedicalAppointment
+from doctors.serializers.appointment_information import AppointmentInformationSerializer
 from doctors.serializers.medical_appointment import MedicalAppointmentCreateSerializer,\
     MedicalAppointmentDashboardSerializer, MedicalAppointmentPatientDataSerializer, MedicalAppointmentSerializer
 
@@ -142,40 +144,46 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
         data = MedicalAppointmentDashboardSerializer(appointments, many = True).data
         return Response(data = data, status = HTTPStatus.OK)
 
-    @action(detail = True, methods = ['post'], url_path = "(accept|reject)",
+    @action(detail = True, methods = ['post'], url_path = "manage/(?P<doctor_action>(accept|reject))",
             permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentPending])
-    def manage_pending_appointment(self, request, pk):
+    def manage_pending_appointment(self, request, pk, *args, **kwargs):
+        doctor_action = kwargs.get('doctor_action')
         medical_appointment = self.get_object()
-        if request.path.endswith("accept"):
-            medical_appointment.status = Status.CONFIRMED
-        else:
-            medical_appointment.status = Status.CANCELED
+        match doctor_action:
+            case 'accept':
+                medical_appointment.status = Status.CONFIRMED
+                medical_appointment.accepted_at = datetime.datetime.now()
+            case 'reject':
+                medical_appointment.status = Status.CANCELED
         medical_appointment.save()
         return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)
 
-    @action(detail = True, methods = ['post'], url_path = "start-appointment",
+    @action(detail = True, methods = ['post'], url_path = "start",
             permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentConfirmed])
-    def start_appointment(self, request):
+    def start_appointment(self, request, pk):
         medical_appointment = self.get_object()
         medical_appointment.status = Status.IN_PROGRESS
+        medical_appointment.start_appointment = datetime.datetime.now()
         medical_appointment.save()
         return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)
 
-    @action(detail = True, methods = ['post'], url_path = "finish-appointment",
+    @action(detail = True, methods = ['post'], url_path = "finish",
             permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentInProgress])
-    def finish_appointment(self, request):
+    def finish_appointment(self, request, pk):
         medical_appointment = self.get_object()
+        serializer = AppointmentInformationSerializer(data = request.data)
+        serializer.is_valid()
+        if serializer.errors:
+            return Response(data = serializer.errors, status = HTTPStatus.BAD_REQUEST)
+        #TODO: Atomic transaction
+        appointment_information = medical_appointment.appointment_information
+        appointment_information.symptoms = serializer.validated_data.get('symptoms', appointment_information.symptoms)
+        appointment_information.diagnosis = serializer.validated_data.get('diagnosis', appointment_information.diagnosis)
+        appointment_information.medications = serializer.validated_data.get('medications', appointment_information.medications)
+        appointment_information.treatment = serializer.validated_data.get('treatment', appointment_information.treatment)
+        appointment_information.recommendations = serializer.validated_data.get('recommendations', appointment_information.recommendations)
+        appointment_information.save()
         medical_appointment.status = Status.FINISHED
+        medical_appointment.end_appointment = datetime.datetime.now()
         medical_appointment.save()
-        return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)
-
-    @action(detail = True, methods = ['post'], url_path = "appointment-information",
-            permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentInProgress])
-    def update_appointment_information(self, request):
-        #TODO: introducir la informacion del informe medico
-        medical_appointment = self.get_object()
-        # data = request.data
-        # appointment_information = medical_appointment.appointment_information
-        # appointment_information.reason_consultation = data.get('reason_consultation', appointment_information.reason_consultation)
-        # appointment_information.save()
         return Response(data = MedicalAppointmentSerializer(medical_appointment).data, status = HTTPStatus.OK)

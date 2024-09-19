@@ -4,11 +4,12 @@ from authentication.models.doctor import Doctor
 from authentication.serializers.patient import PatientAppointmentSerializer, PatientSerializer
 from doctors.models.appointment_information import AppointmentInformation
 from doctors.models.medical_appointment import MedicalAppointment
-from doctors.serializers.appointment_information import AppointmentInformationSerializer
+from doctors.serializers.appointment_information import AppointmentInformationForMedicalAppointmentSerializer,\
+    AppointmentInformationSerializer
 
 
 class MedicalAppointmentSerializer(serializers.ModelSerializer):
-    appointment_information = AppointmentInformationSerializer(many=True, read_only=True)
+    appointment_information = AppointmentInformationSerializer(read_only=True)
     class Meta:
         model = MedicalAppointment
         fields = '__all__'
@@ -34,7 +35,7 @@ class MedicalAppointmentDashboardSerializer(serializers.ModelSerializer):
 
 
 class MedicalAppointmentPatientDataSerializer(serializers.ModelSerializer):
-    appointment_information = AppointmentInformationSerializer(many=True, read_only=True)
+    appointment_information = AppointmentInformationForMedicalAppointmentSerializer(read_only=True)
     patient = PatientAppointmentSerializer()
     class Meta:
         model = MedicalAppointment

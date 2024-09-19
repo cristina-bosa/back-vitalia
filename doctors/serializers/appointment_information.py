@@ -8,3 +8,8 @@ class AppointmentInformationSerializer(serializers.ModelSerializer):
         model = AppointmentInformation
         fields = '__all__'
 
+
+class AppointmentInformationForMedicalAppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentInformation
+        fields = ['id', 'reason_consultation','symptoms', 'diagnosis', 'medications', 'treatment','recommendations']

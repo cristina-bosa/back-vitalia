@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
+from authentication.choices.statusdoctor import StatusDoctor
 from authentication.models import User
 from authentication.models.doctor import Doctor
 from authentication.models.patient import Patient
@@ -72,6 +73,16 @@ class AuthViewSet(viewsets.ViewSet):
             login(request, user)
         if not user or user.is_anonymous:
             return Response({'detail': 'Invalid credentials or activate account'}, status=HTTP_401_UNAUTHORIZED)
+
+        if user.is_doctor():
+            match(user.doctor.status):
+                case StatusDoctor.PENDING:
+                    return Response(data = "Your account is pending. Please wait for the administrator to approve it", status = HTTPStatus.FORBIDDEN)
+                case StatusDoctor.CANCELED:
+                    return Response(data = "Your account has been canceled. Please contact the administrator", status = HTTPStatus.FORBIDDEN)
+                case _:
+                    pass
+
         token, _ = Token.objects.get_or_create(user = user)
         return Response({'access_token': token.key}, status=HTTPStatus.OK)
 
