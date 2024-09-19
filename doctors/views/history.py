@@ -2,12 +2,12 @@ from rest_framework import viewsets
 
 from doctors.choices.status import Status
 from doctors.models.medical_appointment import MedicalAppointment
-from doctors.serializers.medical_appointment import MedicalAppointmentSerializer
+from doctors.serializers.medical_appointment import MedicalAppointmentDashboardSerializer, MedicalAppointmentSerializer
 
 
 class HistoryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = MedicalAppointment.objects.filter(status = Status.FINISHED)
-    serializer_class = MedicalAppointmentSerializer
+    queryset = MedicalAppointment.objects.filter(status__in = [Status.CONFIRMED, Status.IN_PROGRESS, Status.FINISHED])
+    serializer_class = MedicalAppointmentDashboardSerializer
 
     def get_queryset(self):
         user = self.request.user

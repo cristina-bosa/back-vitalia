@@ -21,3 +21,7 @@ class MedicalAppointment(models.Model):
         ordering = ['start_appointment']
         verbose_name = 'Medical Appointment'
         verbose_name_plural = 'Medical Appointments'
+
+    @property
+    def reason_consultation(self):
+        return self.appointment_information.first().reason_consultation
