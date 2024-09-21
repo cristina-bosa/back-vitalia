@@ -38,8 +38,15 @@ class UserViewSet(viewsets.ViewSet):
                 patient = Patient.objects.get(user = user)
                 patient.save()
             elif user.is_doctor():
-                doctor = Doctor.objects.get(user = user)
+                serializer = DoctorSerializer(data = request.data, partial = True)
+                serializer.is_valid()
+                if serializer.errors:
+                    return Response(data = serializer.errors, status = HTTPStatus.BAD_REQUEST)
+                doctor = user.get_profile()
+                doctor.start_schedule = serializer.validated_data.get('start_schedule')
+                doctor.end_schedule = serializer.validated_data.get('end_schedule')
                 doctor.save()
+                serializer.instance = doctor
             return Response(data = serializer.data, status = HTTPStatus.OK)
         return Response(data = serializer.errors, status = HTTPStatus.BAD_REQUEST)
 
