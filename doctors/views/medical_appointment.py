@@ -145,7 +145,7 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
         return Response(data = data, status = HTTPStatus.OK)
 
     @action(detail = True, methods = ['post'], url_path = "manage/(?P<doctor_action>(accept|reject))",
-            permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentPendingOrConfirmed])
+            permission_classes = [IsAuthenticated, IsMedicalAppointmentPendingOrConfirmed])
     def manage_pending_appointment(self, request, pk, *args, **kwargs):
         doctor_action = kwargs.get('doctor_action')
         medical_appointment = self.get_object()

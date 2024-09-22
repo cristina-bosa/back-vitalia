@@ -30,9 +30,10 @@ class MedicalAppointmentDashboardSerializer(serializers.ModelSerializer):
     patient_name = serializers.StringRelatedField(source='patient.user.first_name', read_only=True)
     patient_last_name = serializers.StringRelatedField(source = 'patient.user.last_name', read_only = True)
     reason_consultation = serializers.StringRelatedField(read_only = True)
+    doctor = DoctorSerializer()
     class Meta:
         model = MedicalAppointment
-        fields = ['id','guid', 'status', 'patient_appointment', 'patient_name','patient_last_name', 'reason_consultation']
+        fields = ['id','guid', 'status', 'patient_appointment', 'patient_name','patient_last_name', 'reason_consultation', 'doctor']
 
 
 class MedicalAppointmentDataSerializer(serializers.ModelSerializer):
