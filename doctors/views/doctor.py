@@ -8,13 +8,14 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from authentication.choices.statusdoctor import StatusDoctor
 from authentication.models.doctor import Doctor
-from authentication.permissions.groups import IsUserPatient
+from authentication.permissions.groups import IsUserDoctor, IsUserPatient
 from doctors.choices.status import Status
 from doctors.models.medical_appointment import MedicalAppointment
 from doctors.models.review import Review
 from doctors.serializers.doctor import DoctorSerializer
-from doctors.serializers.review import ReviewSerializer
+from doctors.serializers.review import ReviewDoctorSerializer, ReviewSerializer
 
 
 class DoctorFilter(filters.FilterSet):
@@ -32,6 +33,11 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = DoctorFilter
 
+    @action(detail=False, methods=['get'], url_path='confirmed')
+    def get_active_doctors(self, request):
+        doctors = Doctor.objects.filter(status=StatusDoctor.CONFIRMED)
+        return Response(data=DoctorSerializer(doctors, many=True).data, status=HTTPStatus.OK)
+
     @action (detail = False, methods = ['get'], url_path = 'top')
     def get_top_four(self, request):
         user = request.user
@@ -43,15 +49,18 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
     def reviews(self, request):
         doctor = self.get_object()
         reviews = doctor.reviews_set.all()
-        return Response(ReviewSerializer(reviews, many=True).data, status= HTTPStatus.OK)
+        return Response(ReviewDoctorSerializer(reviews, many=True).data, status= HTTPStatus.OK)
 
-    @action(detail=False, methods=['post'], url_path='review/add')
-    def add_review(self, request):
+    @action(detail = False, methods = ['get'], url_path = 'my-reviews', permission_classes = [IsAuthenticated,
+                                                                                          IsUserDoctor])
+    def reviews(self, request):
+        doctor = self.request.user.doctor
+        reviews = doctor.review_set.all()
+        return Response(ReviewDoctorSerializer(reviews, many = True).data, status = HTTPStatus.OK)
+
+    @action(detail=True, methods=['post'], url_path='review/add')
+    def add_review(self, request,pk):
         doctor = self.get_object()
-        reviews = doctor.reviews_set.filter(patient = self.request.user.patient)
-        if reviews.exists():
-            return Response(data = "Ya has asignado una review a este médico",
-                            status = HTTPStatus.FOUND)
         review_serializer = ReviewSerializer(data = request.data)
         review_serializer.is_valid()
         if review_serializer.errors:
@@ -117,10 +126,10 @@ class DoctorViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(data = slots_available, status = HTTPStatus.OK)
 
     def __calculate_rating(self, doctor):
-        reviews = doctor.reviews_set.all()
+        reviews = doctor.review_set.all()
         total = 0
         for review in reviews:
             total += review.rating
         doctor.stars = total / reviews.count()
         doctor.save()
-        return doctor.rating
+        return doctor.stars

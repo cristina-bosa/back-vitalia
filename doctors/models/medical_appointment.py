@@ -18,7 +18,7 @@ class MedicalAppointment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['start_appointment']
+        ordering = ['-patient_appointment']
         verbose_name = 'Medical Appointment'
         verbose_name_plural = 'Medical Appointments'
 

@@ -18,7 +18,7 @@ from doctors.models.appointment_information import AppointmentInformation
 from doctors.models.medical_appointment import MedicalAppointment
 from doctors.serializers.appointment_information import AppointmentInformationSerializer
 from doctors.serializers.medical_appointment import MedicalAppointmentCreateSerializer,\
-    MedicalAppointmentDashboardSerializer, MedicalAppointmentPatientDataSerializer, MedicalAppointmentSerializer
+    MedicalAppointmentDashboardSerializer, MedicalAppointmentDataSerializer, MedicalAppointmentSerializer
 
 
 class MedicalAppointmentViewSet(viewsets.ModelViewSet):
@@ -35,7 +35,7 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = MedicalAppointmentPatientDataSerializer(instance)
+        serializer = MedicalAppointmentDataSerializer(instance)
         return Response(serializer.data)
 
     @action(detail = False, methods = ['post'], url_path = "book",
@@ -118,7 +118,7 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
 
     @action(detail = False, methods = ['post'], url_path = "filter/(?P<doctor_action>("
                                                           "pending|confirmed|in-progress|canceled|finished))",
-            permission_classes = [IsAuthenticated, IsUserDoctor])
+            permission_classes = [IsAuthenticated])
     def get_medical_appointment_by_date(self, request, *args, **kwargs, ):
         doctor_action = kwargs.get('doctor_action')
         start_date = request.data.get('start_date')
@@ -145,7 +145,7 @@ class MedicalAppointmentViewSet(viewsets.ModelViewSet):
         return Response(data = data, status = HTTPStatus.OK)
 
     @action(detail = True, methods = ['post'], url_path = "manage/(?P<doctor_action>(accept|reject))",
-            permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentPending])
+            permission_classes = [IsAuthenticated, IsUserDoctor, IsMedicalAppointmentPendingOrConfirmed])
     def manage_pending_appointment(self, request, pk, *args, **kwargs):
         doctor_action = kwargs.get('doctor_action')
         medical_appointment = self.get_object()

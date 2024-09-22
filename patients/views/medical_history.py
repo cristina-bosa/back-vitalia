@@ -19,82 +19,74 @@ class MedicalHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail = False, methods = ['post'], url_path = 'allergies/add')
     def add_allergy(self, request):
         medical_history = self.__get_user_medical_history(request)
-        try:
-            allergy = Allergies.objects.get(pk = request.data['allergy_id'])
-        except Allergies.DoesNotExist:
-            return Response(data = {'error': 'Allergy not found'}, status = HTTPStatus.NOT_FOUND)
-        medical_history.allergies.add(allergy)
+        allergies = Allergies.objects.filter(pk__in = request.data['history_id'])
+        for allergy in allergies:
+            medical_history.allergies.add(allergy)
         return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     @action(detail = False, methods = ['post'], url_path = 'allergies/remove')
-    def remove_allergy(self, request, pk):
+    def remove_allergy(self, request):
         medical_history = self.__get_user_medical_history(request)
         try:
-            allergy = Allergies.objects.get(pk = request.data['allergy_id'])
+            allergy = Allergies.objects.get(name = request.data['history_id'])
         except Allergies.DoesNotExist:
             return Response(data = { 'error': 'Allergy not found' }, status = HTTPStatus.NOT_FOUND)
-        medical_history.allergies.delete(allergy)
-        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.NO_CONTENT)
+        medical_history.allergies.remove(allergy)
+        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     @action(detail = False, methods = ['post'], url_path = 'relevant-diseases/add')
-    def add_relevant_disease(self, request, pk):
+    def add_relevant_disease(self, request):
         medical_history = self.__get_user_medical_history(request)
-        try:
-            relevant_diseases = RelevantDiseases.objects.get(pk = request.data['disease_id'])
-        except RelevantDiseases.DoesNotExist:
-            return Response(data = {'error': 'RelevantDiseases not found'}, status = HTTPStatus.NOT_FOUND)
-        medical_history.relevant_diseases.add(relevant_diseases)
+        relevant_diseases = RelevantDiseases.objects.filter(pk__in = request.data['history_id'])
+        for relevant in relevant_diseases:
+            medical_history.relevant_diseases.add(relevant)
         return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     @action(detail = False, methods = ['post'], url_path = 'relevant-diseases/remove')
-    def remove_relevant_disease(self, request, pk):
+    def remove_relevant_disease(self, request):
         medical_history = self.__get_user_medical_history(request)
         try:
-            relevant_diseases = RelevantDiseases.objects.get(pk = request.data['disease_id'])
+            relevant_diseases = RelevantDiseases.objects.get(name = request.data['history_id'])
         except RelevantDiseases.DoesNotExist:
             return Response(data = {'error': 'RelevantDiseases not found'}, status = HTTPStatus.NOT_FOUND)
-        medical_history.relevant_diseases.delete(relevant_diseases)
-        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.NO_CONTENT)
+        medical_history.relevant_diseases.remove(relevant_diseases)
+        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     @action(detail = False, methods = ['post'], url_path = 'current-medication/add')
-    def add_current_medication(self, request, pk):
+    def add_current_medication(self, request):
         medical_history = self.__get_user_medical_history(request)
-        try:
-            current_medication = CurrentMedication.objects.get(pk = request.data['medication_id'])
-        except CurrentMedication.DoesNotExist:
-            return Response(data = {'error': 'CurrentMedication not found'}, status = HTTPStatus.NOT_FOUND)
-        medical_history.current_medication.add(current_medication)
+        current_medication = CurrentMedication.objects.filter(pk__in = request.data['history_id'])
+        for current in current_medication:
+            medical_history.current_medication.add(current)
         return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     @action(detail = False, methods = ['post'], url_path = 'current-medication/remove')
-    def remove_current_medication(self, request, pk):
+    def remove_current_medication(self, request):
         medical_history = self.__get_user_medical_history(request)
         try:
-            current_medication = CurrentMedication.objects.get(pk = request.data['medication_id'])
+            current_medication = CurrentMedication.objects.get(name = request.data['history_id'])
         except CurrentMedication.DoesNotExist:
             return Response(data = {'error': 'CurrentMedication not found'}, status = HTTPStatus.NOT_FOUND)
-        medical_history.current_medication.delete(current_medication)
-        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.NO_CONTENT)
+        medical_history.current_medication.remove(current_medication)
+        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     @action(detail = False, methods = ['post'], url_path = 'medical-intervention/add')
-    def add_medical_intervention(self, request, pk):
+    def add_medical_intervention(self, request):
         medical_history = self.__get_user_medical_history(request)
-        try:
-            medical_intervention = MedicalIntervention.objects.get(pk = request.data['intervention_id'])
-        except MedicalIntervention.DoesNotExist:
-            return Response(data = {'error': 'MedicalIntervention not found'}, status = HTTPStatus.NOT_FOUND)
-        medical_history.medical_intervention.add(medical_intervention)
+        medical_intervention = MedicalIntervention.objects.filter(pk__in = request.data['history_id'])
+        for medical in medical_intervention:
+            medical_history.medical_intervention.add(medical)
         return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     @action(detail = False, methods = ['post'], url_path = 'medical-intervention/remove')
-    def remove_medical_intervention(self, request, pk):
+    def remove_medical_intervention(self, request):
         medical_history = self.__get_user_medical_history(request)
         try:
-            medical_intervention = MedicalIntervention.objects.get(pk = request.data['intervention_id'])
+            medical_intervention = MedicalIntervention.objects.get(name = request.data['history_id'])
         except MedicalIntervention.DoesNotExist:
             return Response(data = {'error': 'MedicalIntervention not found'}, status = HTTPStatus.NOT_FOUND)
-        medical_history.medical_intervention.delete(medical_intervention)
-        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.NO_CONTENT)
+        medical_history.medical_intervention.remove(medical_intervention)
+        return Response(data = self.serializer_class(medical_history).data, status = HTTPStatus.ACCEPTED)
 
     def __get_user_medical_history(self, request):
         user = request.user

@@ -72,7 +72,7 @@ class AuthViewSet(viewsets.ViewSet):
         if user and not user.is_anonymous:
             login(request, user)
         if not user or user.is_anonymous:
-            return Response({'detail': 'Invalid credentials or activate account'}, status=HTTP_401_UNAUTHORIZED)
+            return Response(data='Credenciales inválidas o necesita aprobación', status=HTTP_401_UNAUTHORIZED)
 
         if user.is_doctor():
             match(user.doctor.status):
